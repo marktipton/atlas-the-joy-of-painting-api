@@ -34,6 +34,8 @@ for line in date_lines:
         continue
 
     title = line[:date_start].strip().strip('"')
+    title = re.sub(r'\s*"$', '', title) # remove trailing quote from title if there
+    print(title)
     date = line[date_start + 1:date_end].strip()
     note = line[date_end + 1:].strip()
 
@@ -75,6 +77,6 @@ df['year'] = df['year'].astype(int)
 
 df.drop(columns=['normalized_title'], inplace=True)
 
-df.to_csv('bob_ross_colors_with_dates.csv', index=False)
+# df.to_csv('bob_ross_colors_with_dates.csv', index=False)
 
 print("dates matched, split, and saved")
