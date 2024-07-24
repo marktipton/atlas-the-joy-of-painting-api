@@ -14,4 +14,16 @@ def normalize_title(title):
     title = re.sub(r'[^\w\s]', '', title)
     return title.strip()
 
+# read episode dates
+with open('episode_dates.txt', 'r') as f:
+    date_lines = f.readlines()
 
+dates_dict = {}
+
+for line in dates_lines:
+    title, date = line.split(' (')
+    date = date.rstrip(')\n')
+    normalized_title = normalize_title(title)
+    dates_dict[normalized_title] = date
+
+dataFrameEpisodes = pd.read_csv('bob_ross_colors.csv')
