@@ -20,10 +20,29 @@ with open('episode_dates.txt', 'r') as f:
 
 dates_dict = {}
 
-for line in dates_lines:
-    title, date = line.split(' (')
-    date = date.rstrip(')\n')
+for line in date_lines:
+    date_start = line.rfind('(')
+    date_end = line.rfind(')')
+    if date_start == -1 or date_end == -1:
+        print(f"Skipping line due to incorrect format: {line.strip()}")
+        continue
+
+    title = line[:date_start].strip().strip('"')
+    date = line[date_start + 1:date_end].strip()
+
     normalized_title = normalize_title(title)
     dates_dict[normalized_title] = date
 
-dataFrameEpisodes = pd.read_csv('bob_ross_colors.csv')
+# dataFrame for episodes data
+df = pd.read_csv('bob_ross_colors.csv')
+
+df['normalized_title'] = df['painting_title'].apply(normalize_title)
+
+# add date to dataframe by matching title
+df['date'] = df['normalized_title'].map(dates_dict)
+
+df.drop(columns=['normalized_title'], inplace=True)
+
+df.to_csv('bob_ross_colors_with_dates.csv', index=False)
+
+print("dates matched and saved")
