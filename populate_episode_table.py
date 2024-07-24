@@ -53,6 +53,11 @@ df['month'] = df['date'].dt.month
 df['day'] = df['date'].dt.day
 df['year'] = df['date'].dt.year
 
+# Remove decimal points from month, day, and year columns
+df['month'] = df['month'].astype(int)
+df['day'] = df['day'].astype(int)
+df['year'] = df['year'].astype(int)
+
 df.drop(columns=['normalized_title'], inplace=True)
 
 df.to_csv('bob_ross_colors_with_dates.csv', index=False)
