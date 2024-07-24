@@ -15,8 +15,8 @@ def normalize_title(title):
     title = re.sub(r'[^\w\s]', '', title)
     #remove spaces
     title = re.sub(r'\s+', '', title)
-    # remove trailing 's'
-    title = re.sub(r's$', '', title)
+    # remove trailing 's' only if preceded by a space
+    title = re.sub(r'(\S)s$', r'\1', title)
     return title
 
 # read episode dates
@@ -34,12 +34,19 @@ for line in date_lines:
         continue
 
     title = line[:date_start].strip().strip('"')
-    title = re.sub(r'\s*"$', '', title) # remove trailing quote from title if there
-    print(title)
+    # title = re.sub(r'\s*"$', '', title) # remove trailing quote from title if there
     date = line[date_start + 1:date_end].strip()
     note = line[date_end + 1:].strip()
 
+    # Check if there are additional parentheses in the note
+    if '(' in note and ')' in note:
+        note_start = line.find('(', date_end + 1)
+        note_end = line.find(')', note_start + 1)
+        if note_start != -1 and note_end != -1:
+            note = line[note_start:].strip()
+
     normalized_title = normalize_title(title)
+    print(normalized_title)
     dates_dict[normalized_title] = date
     notes_dict[normalized_title] = note if note else None
 
@@ -51,7 +58,7 @@ df['normalized_title'] = df['painting_title'].apply(normalize_title)
 # find closest title
 def get_date_from_closest_title(title):
     match, score = process.extractOne(title, dates_dict.keys())
-    if score > 80:
+    if score > 70:
         return dates_dict[match]
     return None
 
