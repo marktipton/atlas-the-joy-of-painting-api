@@ -2,6 +2,7 @@
 
 import pandas as pd
 import re
+from fuzzywuzzy import process
 
 def normalize_title(title):
     # Convert to lowercase
@@ -23,6 +24,7 @@ with open('episode_dates.txt', 'r') as f:
     date_lines = f.readlines()
 
 dates_dict = {}
+notes_dict = {}
 
 for line in date_lines:
     date_start = line.rfind('(')
@@ -33,18 +35,27 @@ for line in date_lines:
 
     title = line[:date_start].strip().strip('"')
     date = line[date_start + 1:date_end].strip()
+    note = line[date_end + 1:].strip()
 
     normalized_title = normalize_title(title)
     dates_dict[normalized_title] = date
+    notes_dict[normalized_title] = note if note else None
 
 # dataFrame for episodes data
 df = pd.read_csv('bob_ross_colors.csv')
 
 df['normalized_title'] = df['painting_title'].apply(normalize_title)
 
-# add date to dataframe by matching title
-df['date'] = df['normalized_title'].map(dates_dict)
+# find closest title
+def get_date_from_closest_title(title):
+    match, score = process.extractOne(title, dates_dict.keys())
+    if score > 80:
+        return dates_dict[match]
+    return None
 
+# add date to dataframe by matching title
+df['date'] = df['normalized_title'].apply(get_date_from_closest_title)
+df['note'] = df['normalized_title'].map(notes_dict)
 
 # convert date column to datetime object
 df['date'] = pd.to_datetime(df['date'], errors='coerce', format='%B %d, %Y')
