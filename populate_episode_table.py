@@ -12,7 +12,11 @@ def normalize_title(title):
 
     #remove punctuation
     title = re.sub(r'[^\w\s]', '', title)
-    return title.strip()
+    #remove spaces
+    title = re.sub(r'\s+', '', title)
+    # remove trailing 's'
+    title = re.sub(r's$', '', title)
+    return title
 
 # read episode dates
 with open('episode_dates.txt', 'r') as f:
