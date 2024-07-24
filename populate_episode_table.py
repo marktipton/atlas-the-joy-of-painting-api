@@ -41,8 +41,20 @@ df['normalized_title'] = df['painting_title'].apply(normalize_title)
 # add date to dataframe by matching title
 df['date'] = df['normalized_title'].map(dates_dict)
 
+
+# convert date column to datetime object
+df['date'] = pd.to_datetime(df['date'], errors='coerce', format='%B %d, %Y')
+
+# Check for any rows where date conversion failed
+print(df[df['date'].isna()])
+
+# separate date into month day year
+df['month'] = df['date'].dt.month
+df['day'] = df['date'].dt.day
+df['year'] = df['date'].dt.year
+
 df.drop(columns=['normalized_title'], inplace=True)
 
 df.to_csv('bob_ross_colors_with_dates.csv', index=False)
 
-print("dates matched and saved")
+print("dates matched, split, and saved")
