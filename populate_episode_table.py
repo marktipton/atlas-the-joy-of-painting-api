@@ -10,10 +10,9 @@ def normalize_title(title):
     # replace abbreviations
     title = re.sub(r'\bmt\.?\b', 'mount', title)
     title = re.sub(r'\band\b', '&', title)
-
-    #remove punctuation
+    # remove punctuation
     title = re.sub(r'[^\w\s]', '', title)
-    #remove spaces
+    # remove spaces
     title = re.sub(r'\s+', '', title)
     # remove trailing 's' only if preceded by a space
     title = re.sub(r'(\S)s$', r'\1', title)
@@ -27,23 +26,24 @@ dates_dict = {}
 notes_dict = {}
 
 for line in date_lines:
-    date_start = line.rfind('(')
-    date_end = line.rfind(')')
+    date_start = line.find('(')
+    date_end = line.find(')')
     if date_start == -1 or date_end == -1:
         print(f"Skipping line due to incorrect format: {line.strip()}")
         continue
 
     title = line[:date_start].strip().strip('"')
-    # title = re.sub(r'\s*"$', '', title) # remove trailing quote from title if there
     date = line[date_start + 1:date_end].strip()
-    note = line[date_end + 1:].strip()
 
+    note_start = date_end + 1
+    note = line[note_start:].strip()
     # Check if there are additional parentheses in the note
     if '(' in note and ')' in note:
-        note_start = line.find('(', date_end + 1)
-        note_end = line.find(')', note_start + 1)
+        note_start = note.find('(')
+        note_end = note.find(')', note_start + 1)
         if note_start != -1 and note_end != -1:
-            note = line[note_start:].strip()
+            additional_note = note[note_start:note_end+1]
+            note = note[:note_start].strip() + ' ' + additional_note
 
     normalized_title = normalize_title(title)
     print(normalized_title)
