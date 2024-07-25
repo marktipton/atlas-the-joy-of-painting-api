@@ -12,10 +12,7 @@ def normalize_title(title):
     title = re.sub(r'\band\b', '&', title)
     # remove punctuation
     title = re.sub(r'[^\w\s]', '', title)
-    # remove spaces
-    # title = re.sub(r'\s+', '', title)
-    # remove trailing 's' only if preceded by a space
-    # title = re.sub(r'(\S)s$', r'\1', title)
+    # split and order words to handle names that are in different orders
     words = title.split()
     words.sort()
     normalized_title = ' '.join(words)
@@ -50,7 +47,7 @@ for line in date_lines:
             note = note[:note_start].strip() + ' ' + additional_note
 
     normalized_title = normalize_title(title)
-    print(normalized_title)
+    # print(normalized_title)
     dates_dict[normalized_title] = date
     notes_dict[normalized_title] = note if note else None
 
@@ -68,18 +65,17 @@ def get_date_from_closest_title(title):
 
 # add date to dataframe by matching title
 df['date'] = df['normalized_title'].apply(get_date_from_closest_title)
-df['note'] = df['normalized_title'].map(notes_dict)
 
 # convert date column to datetime object
 df['date'] = pd.to_datetime(df['date'], errors='coerce', format='%B %d, %Y')
-
-# Check for any rows where date conversion failed
-print(df[df['date'].isna()])
 
 # separate date into month day year
 df['month'] = df['date'].dt.month
 df['day'] = df['date'].dt.day
 df['year'] = df['date'].dt.year
+
+# add note if it is there
+df['note'] = df['normalized_title'].map(notes_dict)
 
 # Remove decimal points from month, day, and year columns
 df['month'] = df['month'].astype(int)
