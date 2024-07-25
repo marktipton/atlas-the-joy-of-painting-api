@@ -13,10 +13,14 @@ def normalize_title(title):
     # remove punctuation
     title = re.sub(r'[^\w\s]', '', title)
     # remove spaces
-    title = re.sub(r'\s+', '', title)
+    # title = re.sub(r'\s+', '', title)
     # remove trailing 's' only if preceded by a space
-    title = re.sub(r'(\S)s$', r'\1', title)
-    return title
+    # title = re.sub(r'(\S)s$', r'\1', title)
+    words = title.split()
+    words.sort()
+    normalized_title = ' '.join(words)
+
+    return normalized_title
 
 # read episode dates
 with open('episode_dates.txt', 'r') as f:
@@ -84,6 +88,6 @@ df['year'] = df['year'].astype(int)
 
 df.drop(columns=['normalized_title'], inplace=True)
 
-# df.to_csv('bob_ross_colors_with_dates.csv', index=False)
+df.to_csv('bob_ross_colors_with_dates.csv', index=False)
 
 print("dates matched, split, and saved")
