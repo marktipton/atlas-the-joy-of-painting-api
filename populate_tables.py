@@ -16,7 +16,7 @@ c = psycopg2.connect(
 cursor = c.cursor()
 
 # Create the episodes table if it doesn't exist
-create_table_query = """
+create_episode_table = """
 CREATE TABLE IF NOT EXISTS episodes (
     id SERIAL PRIMARY KEY,
     painting_index INTEGER,
@@ -32,7 +32,18 @@ CREATE TABLE IF NOT EXISTS episodes (
     note TEXT
 );
 """
-cursor.execute(create_table_query)
+cursor.execute(create_episode_table)
+
+# Create the colors table if it doesn't exist
+create_colors_table = """
+CREATE TABLE IF NOT EXISTS colors (
+    id SERIAL PRIMARY KEY,
+    color_name VARCHAR,
+    hex_code VARCHAR
+);
+"""
+
+cursor.execute(create_colors_table)
 
 # load data into pandas DataFrames
 df_episodes = pd.read_csv('bob_ross_colors_with_dates.csv')
@@ -57,6 +68,26 @@ for index, row in df_episodes.iterrows():
         row['year'],
         row['note']
     ))
+
+# Load colors data into pandas DataFrame
+df_colors = pd.read_csv('bob_ross_colors.csv')  # Make sure to replace 'colors.csv' with your actual file name
+
+# Insert colors DataFrame records one by one into the colors table
+for index, row in df_colors.iterrows():
+
+    # Check if the color already exists in the table
+    cursor.execute("SELECT id FROM colors WHERE color_name = %s", (row['colors'],))
+    result = cursor.fetchone()
+
+    if not result:
+        insert_query = sql.SQL("""
+        INSERT INTO colors (color_name, hex_code)
+        VALUES (%s, %s)
+        """)
+        cursor.execute(insert_query, (
+            row['colors'],
+            row['color_hex']
+        ))
 
 # commit changes to db
 c.commit()
