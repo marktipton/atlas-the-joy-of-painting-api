@@ -38,7 +38,7 @@ cursor.execute(create_episode_table)
 create_colors_table = """
 CREATE TABLE IF NOT EXISTS colors (
     id SERIAL PRIMARY KEY,
-    color_name VARCHAR,
+    color_name VARCHAR UNIQUE,
     hex_code VARCHAR
 );
 """
@@ -69,25 +69,35 @@ for index, row in df_episodes.iterrows():
         row['note']
     ))
 
-# Load colors data into pandas DataFrame
-df_colors = pd.read_csv('bob_ross_colors.csv')  # Make sure to replace 'colors.csv' with your actual file name
+# colors and corresponding hex codes
+colors_and_hex = {
+    'Black_Gesso': '#000000',
+    'Bright_Red': '#DB0000',
+    'Burnt_Umber': '#8A3324',
+    'Cadmium_Yellow': '#FFEC00',
+    'Dark_Sienna': '#3C1414',
+    'Indian_Red': '#CD5C5C',
+    'Indian_Yellow': '#E3A857',
+    'Liquid_Black': '#000000',
+    'Liquid_Clear': '#FFFFFF',
+    'Midnight_Black': '#343434',
+    'Phthalo_Blue': '#000F89',
+    'Phthalo_Green': '#102E3C',
+    'Prussian_Blue': '#021E44',
+    'Sap_Green': '#0A3410',
+    'Titanium_White': '#FFFFFF',
+    'Van_Dyke_Brown': '#221B15',
+    'Yellow_Ochre': '#CB823B',
+    'Alizarin_Crimson': '#4E1500'
+}
 
-# Insert colors DataFrame records one by one into the colors table
-for index, row in df_colors.iterrows():
-
-    # Check if the color already exists in the table
-    cursor.execute("SELECT id FROM colors WHERE color_name = %s", (row['colors'],))
-    result = cursor.fetchone()
-
-    if not result:
-        insert_query = sql.SQL("""
-        INSERT INTO colors (color_name, hex_code)
-        VALUES (%s, %s)
-        """)
-        cursor.execute(insert_query, (
-            row['colors'],
-            row['color_hex']
-        ))
+# Insert unique colors and hex codes into the colors table
+for color_name, hex_code in colors_and_hex.items():
+    cursor.execute("""
+    INSERT INTO colors (color_name, hex_code)
+    VALUES (%s, %s)
+    ON CONFLICT (color_name) DO NOTHING
+    """, (color_name, hex_code))
 
 # commit changes to db
 c.commit()
