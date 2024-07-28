@@ -15,7 +15,6 @@ c = psycopg2.connect(
 # open cursor to perform operations on database
 cursor = c.cursor()
 
-# Create the episodes table if it doesn't exist
 create_episode_table = """
 CREATE TABLE IF NOT EXISTS episodes (
     id SERIAL PRIMARY KEY,
@@ -34,7 +33,6 @@ CREATE TABLE IF NOT EXISTS episodes (
 """
 cursor.execute(create_episode_table)
 
-# Create the colors table if it doesn't exist
 create_colors_table = """
 CREATE TABLE IF NOT EXISTS colors (
     id SERIAL PRIMARY KEY,
@@ -44,6 +42,15 @@ CREATE TABLE IF NOT EXISTS colors (
 """
 
 cursor.execute(create_colors_table)
+
+create_episodes_colors_table = """
+CREATE TABLE IF NOT EXISTS episodes_colors (
+    id SERIAL PRIMARY KEY,
+    episode_id INTEGER REFERENCES episodes(id),
+    color_id INTEGER REFERENCES colors(id)
+);
+"""
+cursor.execute(create_episodes_colors_table)
 
 # load data into pandas DataFrames
 df_episodes = pd.read_csv('bob_ross_colors_with_dates.csv')
@@ -98,6 +105,21 @@ for color_name, hex_code in colors_and_hex.items():
     VALUES (%s, %s)
     ON CONFLICT (color_name) DO NOTHING
     """, (color_name, hex_code))
+
+# Insert data into the episodes_colors junction table
+for index, row in df_episodes.iterrows():
+    # Get the episode id
+    cursor.execute("SELECT id FROM episodes WHERE painting_index = %s", (row['painting_index'],))
+    episode_id = cursor.fetchone()[0]
+
+    for color_name in colors_and_hex.keys():
+        if row[color_name] == 1:
+            cursor.execute("SELECT id FROM colors WHERE color_name = %s", (color_name,))
+            color_id = cursor.fetchone()[0]
+            cursor.execute("""
+            INSERT INTO episodes_colors (episode_id, color_id)
+            VALUES (%s, %s)
+            """, (episode_id, color_id))
 
 # commit changes to db
 c.commit()
