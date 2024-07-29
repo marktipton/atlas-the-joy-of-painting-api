@@ -62,6 +62,16 @@ CREATE TABLE IF NOT EXISTS subjects (
 """
 cursor.execute(create_subjects_table)
 
+# Create the episodes_subjects table if it doesn't exist
+create_episodes_subjects_table = """
+CREATE TABLE IF NOT EXISTS episodes_subjects (
+    id SERIAL PRIMARY KEY,
+    episode_id INTEGER REFERENCES episodes(id),
+    subject_id INTEGER REFERENCES subjects(id)
+);
+"""
+cursor.execute(create_episodes_subjects_table)
+
 # load data into pandas DataFrames
 df_episodes = pd.read_csv('bob_ross_colors_with_dates.csv')
 df_subjects = pd.read_csv('bob_ross_subjects.csv')
