@@ -41,12 +41,14 @@ app.get('/episodes/subjects', async (req, res) => {
     console.log(subjectsArray);
     try {
       const result = await pool.query(
-        `SELECT DISTINCT e.id, e.painting_index, e.img_src, e.title, e.season, e.episode_number, e.youtube_src, e.date, e.month, e.day, e.year, e.note
+        `SELECT e.id, e.painting_index, e.img_src, e.title, e.season, e.episode_number, e.youtube_src, e.date, e.month, e.day, e.year, e.note
          FROM episodes e
          JOIN episodes_subjects es ON e.id = es.episode_id
          JOIN subjects s ON es.subject_id = s.id
-         WHERE s.subject_name = ANY($1::text[])`,
-        [subjectsArray]
+         WHERE s.subject_name = ANY($1::text[])
+         GROUP BY e.id, e.painting_index, e.img_src, e.title, e.season, e.episode_number, e.youtube_src, e.date, e.month, e.day, e.year, e.note
+         HAVING COUNT(DISTINCT s.subject_name) = $2`,
+        [subjectsArray, subjectsArray.length]
       );
       res.json(result.rows);
     } catch (error) {
