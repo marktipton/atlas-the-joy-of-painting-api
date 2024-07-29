@@ -3,6 +3,7 @@
 import pandas as pd
 import psycopg2
 from psycopg2 import sql
+from combine_dates_and_colors import normalize_title
 
 c = psycopg2.connect(
     dbname="joyofcoding",
