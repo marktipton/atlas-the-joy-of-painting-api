@@ -3,8 +3,8 @@
 import pandas as pd
 import psycopg2
 from psycopg2 import sql
-from combine_dates_and_colors import normalize_title
 
+# Connect to the database
 c = psycopg2.connect(
     dbname="joyofcoding",
     user="bob",
@@ -13,9 +13,10 @@ c = psycopg2.connect(
     port="5432"
 )
 
-# open cursor to perform operations on database
+# Open cursor to perform operations on the database
 cursor = c.cursor()
 
+# Create episodes table
 create_episode_table = """
 CREATE TABLE IF NOT EXISTS episodes (
     id SERIAL PRIMARY KEY,
@@ -34,6 +35,7 @@ CREATE TABLE IF NOT EXISTS episodes (
 """
 cursor.execute(create_episode_table)
 
+# Create colors table
 create_colors_table = """
 CREATE TABLE IF NOT EXISTS colors (
     id SERIAL PRIMARY KEY,
@@ -41,9 +43,9 @@ CREATE TABLE IF NOT EXISTS colors (
     hex_code VARCHAR
 );
 """
-
 cursor.execute(create_colors_table)
 
+# Create episodes_colors table
 create_episodes_colors_table = """
 CREATE TABLE IF NOT EXISTS episodes_colors (
     id SERIAL PRIMARY KEY,
@@ -53,7 +55,7 @@ CREATE TABLE IF NOT EXISTS episodes_colors (
 """
 cursor.execute(create_episodes_colors_table)
 
-# Create the subjects table if it doesn't exist
+# Create subjects table
 create_subjects_table = """
 CREATE TABLE IF NOT EXISTS subjects (
     id SERIAL PRIMARY KEY,
@@ -62,7 +64,7 @@ CREATE TABLE IF NOT EXISTS subjects (
 """
 cursor.execute(create_subjects_table)
 
-# Create the episodes_subjects table if it doesn't exist
+# Create episodes_subjects table
 create_episodes_subjects_table = """
 CREATE TABLE IF NOT EXISTS episodes_subjects (
     id SERIAL PRIMARY KEY,
@@ -72,10 +74,9 @@ CREATE TABLE IF NOT EXISTS episodes_subjects (
 """
 cursor.execute(create_episodes_subjects_table)
 
-# load data into pandas DataFrames
+# Load data into pandas DataFrames
 df_episodes = pd.read_csv('bob_ross_colors_with_dates.csv')
 df_subjects = pd.read_csv('bob_ross_subjects.csv')
-# df_subjects = pd.read_csv('bob_ross_subjects.csv')
 
 # Insert DataFrame records one by one into the episodes table
 for index, row in df_episodes.iterrows():
@@ -97,7 +98,7 @@ for index, row in df_episodes.iterrows():
         row['note']
     ))
 
-# colors and corresponding hex codes
+# Colors and corresponding hex codes
 colors_and_hex = {
     'Black_Gesso': '#000000',
     'Bright_Red': '#DB0000',
