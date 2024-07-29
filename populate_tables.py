@@ -52,8 +52,18 @@ CREATE TABLE IF NOT EXISTS episodes_colors (
 """
 cursor.execute(create_episodes_colors_table)
 
+# Create the subjects table if it doesn't exist
+create_subjects_table = """
+CREATE TABLE IF NOT EXISTS subjects (
+    id SERIAL PRIMARY KEY,
+    subject_name VARCHAR UNIQUE
+);
+"""
+cursor.execute(create_subjects_table)
+
 # load data into pandas DataFrames
 df_episodes = pd.read_csv('bob_ross_colors_with_dates.csv')
+df_subjects = pd.read_csv('bob_ross_subjects.csv')
 # df_subjects = pd.read_csv('bob_ross_subjects.csv')
 
 # Insert DataFrame records one by one into the episodes table
@@ -120,6 +130,17 @@ for index, row in df_episodes.iterrows():
             INSERT INTO episodes_colors (episode_id, color_id)
             VALUES (%s, %s)
             """, (episode_id, color_id))
+
+# Dynamically generate subjects list from the DataFrame column headers
+subjects_list = [col for col in df_subjects.columns if col not in ['EPISODE', 'TITLE']]
+
+# Insert unique subjects into the subjects table
+for subject in subjects_list:
+    cursor.execute("""
+    INSERT INTO subjects (subject_name)
+    VALUES (%s)
+    ON CONFLICT (subject_name) DO NOTHING
+    """, (subject,))
 
 # commit changes to db
 c.commit()
