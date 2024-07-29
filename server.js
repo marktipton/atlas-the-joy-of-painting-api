@@ -69,6 +69,43 @@ app.get('/episodes/subjects', async (req, res) => {
     }
   }
 });
+
+app.get('/episodes/colors', async (req, res) => {
+  const { colors } = req.query;
+
+  if (colors) {
+    const colorsArray = colors.split(',');
+    try {
+      // SQL query to find episodes that contain all the specified colors
+      const result = await pool.query(
+        `SELECT e.id, e.painting_index, e.img_src, e.title, e.season, e.episode_number, e.youtube_src, e.date, e.month, e.day, e.year, e.note
+         FROM episodes e
+         JOIN episodes_colors ec ON e.id = ec.episode_id
+         JOIN colors c ON ec.color_id = c.id
+         WHERE c.color_name = ANY($1::text[])
+         GROUP BY e.id
+         HAVING COUNT(DISTINCT c.color_name) = $2`,
+        [colorsArray, colorsArray.length]
+      );
+      res.json(result.rows);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Server error');
+    }
+  } else {
+    // If no query parameter is provided, return the list of colors
+    try {
+      const result = await pool.query('SELECT * FROM colors');
+      res.json({
+        message: 'All colors are listed below. Choose one or more to find information about the episodes with those colors present',
+        data: result.rows
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Server error');
+    }
+  }
+});
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
