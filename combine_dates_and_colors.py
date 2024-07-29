@@ -76,26 +76,4 @@ df.drop(columns=['normalized_title'], inplace=True)
 
 df.to_csv('bob_ross_colors_with_dates.csv', index=False)
 
-# Convert the subjects DataFrame to long format for merging
-df_subjects_long = df_subjects.melt(id_vars=['normalized_title'], var_name='subject', value_name='presence')
-
-# Debugging: Print column names to verify
-print("df columns:", df.columns)
-print("df_subjects_long columns:", df_subjects_long.columns)
-
-# Add subject presence/absence data by merging
-df_episodes_subjects = df.merge(df_subjects_long, left_on='normalized_title', right_on='normalized_title', how='left')
-
-# Drop intermediate columns and rename columns
-df_episodes_subjects.rename(columns={
-    'painting_title': 'episode_title',
-    'subject': 'subject_name',
-    'presence': 'subject_presence'
-}, inplace=True)
-
-# Drop 'normalized_title' column if it exists
-df_episodes_subjects.drop(columns=['normalized_title'], inplace=True, errors='ignore')
-
-# Save the updated DataFrame with presence/absence data
-df_episodes_subjects.to_csv('bob_ross_colors_with_dates_and_subjects.csv', index=False)
 print("dates matched, split, and saved")
