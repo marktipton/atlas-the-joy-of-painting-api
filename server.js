@@ -16,6 +16,16 @@ const pool = new Pool({
   port: 5432,
 });
 
+app.get('/episodes', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM episodes');
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+});
+
 app.get('/episodes/month', async (req, res) => {
   const { month } = req.query;
   if (!month) {
