@@ -33,15 +33,16 @@ app.get('/episodes/month', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
 app.get('/episodes/subjects', async (req, res) => {
   const { subjects } = req.query;
 
   if (subjects) {
     const subjectsArray = subjects.split(',');
+    console.log(subjectsArray);
     try {
       const result = await pool.query(
-        `SELECT * FROM episodes
+        `SELECT DISTINCT e.id, e.painting_index, e.img_src, e.title, e.season, e.episode_number, e.youtube_src, e.date, e.month, e.day, e.year, e.note
+         FROM episodes e
          JOIN episodes_subjects es ON e.id = es.episode_id
          JOIN subjects s ON es.subject_id = s.id
          WHERE s.subject_name = ANY($1::text[])`,
