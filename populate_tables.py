@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS episodes_subjects (
 cursor.execute(create_episodes_subjects_table)
 
 # Load data into pandas DataFrames
-df_episodes = pd.read_csv('bob_ross_colors_with_dates.csv')
+df_episodes = pd.read_csv('bob_ross_colors_with_dates_and_subjects.csv')
 df_subjects = pd.read_csv('bob_ross_subjects.csv')
 
 # Insert DataFrame records one by one into the episodes table
@@ -153,6 +153,21 @@ for subject in subjects_list:
     VALUES (%s)
     ON CONFLICT (subject_name) DO NOTHING
     """, (subject,))
+
+# Insert data into the episodes_subjects junction table
+for index, row in df_episodes.iterrows():
+    # Get the episode id
+    cursor.execute("SELECT id FROM episodes WHERE painting_index = %s", (row['painting_index'],))
+    episode_id = cursor.fetchone()[0]
+
+    for subject in subjects_list:
+        if row[subject] == 1.0:
+            cursor.execute("SELECT id FROM subjects WHERE subject_name = %s", (subject,))
+            subject_id = cursor.fetchone()[0]
+            cursor.execute("""
+            INSERT INTO episodes_subjects (episode_id, subject_id)
+            VALUES (%s, %s)
+            """, (episode_id, subject_id))
 
 # commit changes to db
 c.commit()
