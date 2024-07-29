@@ -34,6 +34,38 @@ app.get('/episodes/month', async (req, res) => {
   }
 });
 
+app.get('/episodes/subjects', async (req, res) => {
+  const { subjects } = req.query;
+
+  if (subjects) {
+    const subjectsArray = subjects.split(',');
+    try {
+      const result = await pool.query(
+        `SELECT * FROM episodes
+         JOIN episodes_subjects es ON e.id = es.episode_id
+         JOIN subjects s ON es.subject_id = s.id
+         WHERE s.subject_name = ANY($1::text[])`,
+        [subjectsArray]
+      );
+      res.json(result.rows);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Server error');
+    }
+  } else {
+    // If no query parameter is provided, return the list of subjects
+    try {
+      const result = await pool.query('SELECT * FROM subjects');
+      res.json({
+        message: 'All subjects are listed below. Choose one or more to find information about the episodes with those subjects present',
+        data: result.rows
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Server error');
+    }
+  }
+});
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
