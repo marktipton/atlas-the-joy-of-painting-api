@@ -117,61 +117,61 @@ app.get('/episodes/colors', async (req, res) => {
   }
 });
 
-app.get('/episodes/filter', async (req, res) => {
-  const { month, subjects, colors, match_all } = req.query;
+// app.get('/episodes/filter', async (req, res) => {
+//   const { month, subjects, colors, match_all } = req.query;
 
-  let query = `
-    SELECT DISTINCT e.id, e.painting_index, e.img_src, e.title, e.season, e.episode_number, e.youtube_src, e.date, e.month, e.day, e.year, e.note
-    FROM episodes e
-    LEFT JOIN episodes_subjects es ON e.id = es.episode_id
-    LEFT JOIN subjects s ON es.subject_id = s.id
-    LEFT JOIN episodes_colors ec ON e.id = ec.episode_id
-    LEFT JOIN colors c ON ec.color_id = c.id
-    WHERE 1=1
-  `;
+//   let query = `
+//     SELECT DISTINCT e.id, e.painting_index, e.img_src, e.title, e.season, e.episode_number, e.youtube_src, e.date, e.month, e.day, e.year, e.note
+//     FROM episodes e
+//     LEFT JOIN episodes_subjects es ON e.id = es.episode_id
+//     LEFT JOIN subjects s ON es.subject_id = s.id
+//     LEFT JOIN episodes_colors ec ON e.id = ec.episode_id
+//     LEFT JOIN colors c ON ec.color_id = c.id
+//     WHERE 1=1
+//   `;
 
-  const params = [];
-  let paramIndex = 1;
+//   const params = [];
+//   let paramIndex = 1;
 
-  if (month) {
-    query += ` AND e.month = $${paramIndex++}`;
-    params.push(month);
-  }
+//   if (month) {
+//     query += ` AND e.month = $${paramIndex++}`;
+//     params.push(month);
+//   }
 
-  if (subjects) {
-    const subjectsArray = subjects.split(',');
-    query += ` AND s.subject_name = ANY($${paramIndex++}::text[])`;
-    params.push(subjectsArray);
-  }
+//   if (subjects) {
+//     const subjectsArray = subjects.split(',');
+//     query += ` AND s.subject_name = ANY($${paramIndex++}::text[])`;
+//     params.push(subjectsArray);
+//   }
 
-  if (colors) {
-    const colorsArray = colors.split(',');
-    query += ` AND c.color_name = ANY($${paramIndex++}::text[])`;
-    params.push(colorsArray);
-  }
+//   if (colors) {
+//     const colorsArray = colors.split(',');
+//     query += ` AND c.color_name = ANY($${paramIndex++}::text[])`;
+//     params.push(colorsArray);
+//   }
 
-  // Match all or any
-  if (match_all === 'true') {
-    if (subjects) {
-      query += ` GROUP BY e.id HAVING COUNT(DISTINCT s.subject_name) = $${paramIndex++}`;
-      params.push(subjects.split(',').length);
-    }
-    if (colors) {
-      query += ` AND COUNT(DISTINCT c.color_name) = $${paramIndex++}`;
-      params.push(colors.split(',').length);
-    }
-  } else {
-    query += ` GROUP BY e.id`;
-  }
+//   // Match all or any
+//   if (match_all === 'true') {
+//     if (subjects) {
+//       query += ` GROUP BY e.id HAVING COUNT(DISTINCT s.subject_name) = $${paramIndex++}`;
+//       params.push(subjects.split(',').length);
+//     }
+//     if (colors) {
+//       query += ` AND COUNT(DISTINCT c.color_name) = $${paramIndex++}`;
+//       params.push(colors.split(',').length);
+//     }
+//   } else {
+//     query += ` GROUP BY e.id`;
+//   }
 
-  try {
-    const result = await pool.query(query, params);
-    res.json(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Server error');
-  }
-});
+//   try {
+//     const result = await pool.query(query, params);
+//     res.json(result.rows);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Server error');
+//   }
+// });
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
