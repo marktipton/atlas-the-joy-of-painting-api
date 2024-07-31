@@ -39,3 +39,24 @@ Your local public broadcasting station has an overwhelming amount of requests fo
      - Month of original broadcast.
      - Subject Matter.
      - Color Palette.
+
+## Commands and queries:
+
+  - Get information about all episodes:
+    - http://localhost:3000/episodes/
+
+  - Get information about all of the colors used by Bob Ross:
+    - http://localhost:3000/episodes/colors
+
+  - Get a list of subjects present in bob ross paintings:
+    - http://localhost:3000/episodes/subjects
+
+  - Find all episodes from February:
+    - http://localhost:3000/episodes/month?month=2
+
+  - Get episodes where Bob used Phthalo Blue and Dark Sienna:
+    - http://localhost:3000/episodes/colors?colors=Dark_Sienna, Phthalo_Blue
+
+  - Get episodes that contain a boat and a dock
+    - http://localhost:3000/episodes/subjects?subjects=BOAT,DOCK
+
